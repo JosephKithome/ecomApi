@@ -1,0 +1,185 @@
+from typing import DefaultDict
+from django.db import models
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
+from mptt.models import MPTTModel, TreeForeignKey
+# Create your models here.
+
+
+class ProductCategory(MPTTModel):
+    """
+    Products category implemented using  mptt.
+    """
+    name = models.CharField(
+        verbose_name=_("Category Name"),
+        help_text=_("Required and unique"),
+        max_length=255,
+        unique=True
+    )
+    slug = models.SlugField(verbose_name=_(
+        "Category safe URL"), max_length=255, unique=True)
+
+    parent = TreeForeignKey("self", on_delete=models.CASCADE,
+                            null=True, blank=True, related_name="children")
+    is_active = models.BooleanField(default=True)
+
+    class MPTTMeta:
+        order_insertion_by = ["name"]
+
+    class Meta:
+        verbose_name = _("Product Category")
+        verbose_name_plural = _("Product Categories")
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class ProductType(models.Model):
+    """"
+    Table aimed at providing a list of the 
+    different types of products available forsale
+    """
+    name = models.CharField(verbose_name=_(
+        "Product Name"), help_text="Required", max_length=255)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = _("Product Type")
+        verbose_name_plural = _("Product Types")
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class ProductSpecification(models.Model):
+    """
+    The product specification holds the
+     product specification or the features for the product.
+    """
+    product_type = models.ForeignKey(ProductType, on_delete=models.RESTRICT)
+    name = models.CharField(verbose_name=_(
+        "Specification Name"), help_text=_("Required"), max_length=255)
+
+    class Meta:
+        verbose_name = _("Product Specification")
+        verbose_name_plural = _("Product Specifications")
+
+    def __str__(self) -> str:
+        return self.name    
+
+
+class Product(models.Model):
+    """
+    This table holds all the product items
+    """
+
+    product_type = models.ForeignKey(ProductType, on_delete=models.RESTRICT)
+    product_category = models.ForeignKey(
+        ProductCategory, on_delete=models.RESTRICT)
+    title = models.CharField(
+        verbose_name=_("Product Title"),
+        help_text=_("Required"),
+        max_length=255,
+    )
+    description = models.TextField(
+        verbose_name=_("Product Description"),
+        help_text=_("Not Required"),
+        blank=True)
+
+    slug = models.SlugField(max_length=255)
+    regular_price = models.DecimalField(
+        verbose_name=_("Regular Price"),
+        help_text=_("Maximum 9999999.99"),
+        error_messages={
+            "name": {
+                "max_length_error": _("The price must be between 0 and 9999999.99"),
+            },
+        },
+        max_digits=7,
+        decimal_places=2
+    )
+
+    # To create its table later
+    discount_price = models.DecimalField(
+        verbose_name=_("Discount Price"),
+        help_text=_("Maximum 9999999.99"),
+        error_messages={
+            "name": {
+                "max_length_error": _("The price must be between 0 and 9999999.99"),
+            },
+        },
+        max_digits=7,
+        decimal_places=2
+    )
+
+    is_active = models.BooleanField(
+        verbose_name=_("Product Visibility"),
+        help_text=_("Change product visibility"),
+        default=True
+    )
+    created_at = models.DateTimeField(
+        _("Created at"), auto_now_add=True, editable=False)
+
+    class Meta:
+        ordering = ("-created_at",)
+        verbose_name = _("Product")
+        verbose_name_plural = _("Products")
+
+    def get_absolute_url(self):
+        return reverse("Api:product_detail", args=[self.slug])
+
+    def __str__(self) -> str:
+        return self.title
+
+
+class ProductSpecificationValue(models.Model):
+    """
+    This table holds the specification value of each of the products individual
+    specification or bespoke features.
+    """
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    specification = models.ForeignKey(
+        ProductSpecification, on_delete=models.RESTRICT)
+    value = models.CharField(
+        verbose_name=_("Value"),
+        help_text=_("Product specification value (maximum of 255 characters)"),
+        max_length=255
+    )
+
+    class Meta:
+        verbose_name = _("Product Specification Value")
+        verbose_name_plural = _("Product Specification Value")
+
+    def __str__(self):
+        return self.value
+
+
+class ProductImage(models.Model):
+    """
+    Table that holds product images 
+
+    """
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="product_image")
+    image = models.ImageField(
+        verbose_name=_("Image"),
+        help_text=_("Upload product image"),
+        upload_to="media/",
+        default="media/default.jpg",
+
+    )
+    alt_text = models.CharField(
+        verbose_name=_("Alternative text"),
+        help_text=_("Please add alternative text!"),
+        max_length=255,
+        null=True,
+        blank=True
+    )
+    is_featured = models.BooleanField(default=False)
+    is_trending = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Product Image")
+        verbose_name_plural = _("Product Images")
