@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import django_heroku
 from pathlib import Path
 from environs import Env
+import os
 
 env = Env()
 env.read_env()
@@ -120,7 +121,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "USER": "joseph",
-        "PASSWORD": env.str("PASSWORD"),
+        "PASSWORD": os.environ.get("PASSWORD"),
         "NAME": "ecomdb",
         "PORT": 5432,
         # "HOST": "db",
