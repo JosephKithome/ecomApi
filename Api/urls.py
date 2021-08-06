@@ -1,9 +1,15 @@
 from django.urls import path
-from .views import ProductList,ProductDetail
-from  rest_framework.routers import SimpleRouter
+from .views import CategoryListView, ProductList, ProductDetail, CategoryItemView
+from rest_framework.routers import SimpleRouter
 
-#using normal urls
-urlpatterns =[
-    path('api/v1/product/',ProductList.as_view()),
-    path('api/v1/product/<int:pk>/',ProductDetail.as_view()),
+app_name = "store"
+
+# using normal urls
+urlpatterns = [
+    path("", ProductList.as_view(), name="home"),
+    path("<slug:slug>/", ProductDetail.as_view(), name="product"),
+    # returns all the categories
+    path("category", CategoryListView.as_view(), name="categories"),
+    # Returns products in a particular category(filtered by slug which is category name)
+    path("category/<slug:slug>/", CategoryItemView.as_view(), name="category_items"),
 ]
