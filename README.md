@@ -1,3 +1,3 @@
 API endpoint
 
-https://furikamall.herokuapp.com/ 
+https://furikaapp.herokuapp.com/ 
