@@ -10,6 +10,8 @@ from .models import (
     ProductType,
     ProductImage,
     ProductSpecificationValue,
+    OrderItem,
+    Order
 )
 
 admin.site.register(ProductCategory, MPTTModelAdmin)
@@ -38,3 +40,6 @@ class ProductAdmin(admin.ModelAdmin):
         ProductSpecificationInlineValue,
         ProductImageInline,
     ]
+
+admin.site.register(OrderItem)   
+admin.site.register(Order) 

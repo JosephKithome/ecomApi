@@ -24,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str('SECRET_KEY','sample_unsafe_secret')
+SECRET_KEY = env.str("SECRET_KEY", "sample_unsafe_secret")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=False)
+DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = ['.herokuapp.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [".herokuapp.com", "localhost", "127.0.0.1"]
 
 # Application definition
 
@@ -43,21 +43,19 @@ INSTALLED_APPS = [
     # 3rd party
     "rest_framework",
     "mptt",
-    #sets allowed consuming domains
+    # sets allowed consuming domains
     "corsheaders",
-    #generates token
+    # generates token
     "rest_framework.authtoken",
-
-    #auth related
+    # auth related
     "django.contrib.sites",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "dj_rest_auth",
     "dj_rest_auth.registration",
-
-    #for documenting the api for friendlier consumption to the frontend
-    'drf_yasg',
+    # for documenting the api for friendlier consumption to the frontend
+    "drf_yasg",
     # Local
     "Api.apps.ApiConfig",
     "Auth.apps.AuthConfig",
@@ -77,12 +75,23 @@ REST_FRAMEWORK = {
 # Custom User Model
 AUTH_USER_MODEL = "Auth.CustomUser"
 
-#Allowed consuming domains
-ORS_ORIGIN_WHITELIST = (
-    'http://localhost:3000',
-    'http://localhost:8000',
-    'http://localhost:4200',
+# Allows us to send csrf  token or cookies to external servers
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = "Lax"
+# Blocks clients side javascript from accessing the csrf tokens and cookies
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
+
+# Allowed consuming domains
+CORS_ORIGIN_WHITELIST = (
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:4200",
 )
+# collects data from incoming requests
+CORS_EXPOSE_HEADER = ["Content-Type", "X-CSRFToken"]
+# Alllows cookies to be sent along with cross origin requests.
+CORS_ALLOW_CREDENTIALS = True
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -135,20 +144,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME":
-        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        "NAME":
-        "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        "NAME":
-        "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        "NAME":
-        "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -173,13 +178,13 @@ STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media/"
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Heroku
 django_heroku.settings(locals())
 
-#Email backend
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email backend
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-#is a way to host multiple websites from the same Django project.
+# is a way to host multiple websites from the same Django project.
 SITE_ID = 1

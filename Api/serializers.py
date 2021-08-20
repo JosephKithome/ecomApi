@@ -1,6 +1,6 @@
 from django.db.models import fields
 from rest_framework import serializers
-from .models import Product, ProductCategory, ProductImage
+from .models import Product, ProductCategory, ProductImage,OrderItem,Order
 from django.contrib.auth import get_user_model
 
 
@@ -29,3 +29,8 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
         fields = ("name", "slug")
+
+class AddToCartSerializer(serializers.ModelSerializer):    
+    class Meta:
+        model = OrderItem
+        fields = "__all__"  

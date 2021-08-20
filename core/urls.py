@@ -26,8 +26,8 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("products/", include("Api.urls")),
-    path('users/',include('Auth.urls')),
+    path("products/", include("Api.urls"), name="store"),
+    path("users/", include("Auth.urls"), name="accounts"),
     # for adding auth to the browsable web api
     path("auth/", include("rest_framework.urls")),
     # authentication
@@ -35,10 +35,8 @@ urlpatterns = [
     # registration specific
     path("auth/registration/", include("dj_rest_auth.registration.urls")),
     # Documentation urlpatterns
-    path('', schema_view.with_ui(
-        'swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui(
-        'redoc', cache_timeout=0), name='schema-redoc'),
+    path("", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+    path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ]
 
 if settings.DEBUG:
