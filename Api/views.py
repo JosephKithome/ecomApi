@@ -4,6 +4,8 @@ from .models import Product, ProductCategory
 from . import models
 from .permissions import IsAuthorOrReadOnly
 from django.http import JsonResponse,response
+from django.shortcuts import get_object_or_404
+from .models import Order,OrderItem
 
 from .serializers import ProductSerializer, CategorySerializer
 
@@ -11,6 +13,10 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK,HTTP_400_BAD_REQUEST
+from django.utils import timezone
+from rest_framework import status
+from datetime import datetime
 # Create your views here.
 class ProductList(generics.ListAPIView):
     permission_classes = (IsAuthorOrReadOnly,)
@@ -48,10 +54,6 @@ class CategoryListView(generics.ListAPIView):
 
 class AddtoOrderItemView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    # queryset = OrderItem.objects.all()
-    # serializer_class = OrderItemSerializer
-    # @action(detail=True, methods=['post'])
-# @login_required
     def post(self, request, pk):
         item = get_object_or_404(Product, pk=pk)
         order_item, created = OrderItem.objects.get_or_create(
