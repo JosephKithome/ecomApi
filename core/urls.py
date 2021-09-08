@@ -26,14 +26,14 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("products/", include("Api.urls"), name="store"),
+    path("apiv1/product/", include("Api.urls", namespace="store")),
     path("users/", include("Auth.urls"), name="accounts"),
     # for adding auth to the browsable web api
-    path("auth/", include("rest_framework.urls")),
+    path('api-auth/',include('rest_framework.urls')),
     # authentication
-    path("auth/", include("dj_rest_auth.urls")),
+    path("apiv1/auth/", include("dj_rest_auth.urls")),
     # registration specific
-    path("auth/registration/", include("dj_rest_auth.registration.urls")),
+    path("apiv1/auth/registration/", include("dj_rest_auth.registration.urls")),
     # Documentation urlpatterns
     path("", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),

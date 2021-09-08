@@ -13,7 +13,7 @@ import django_heroku
 from pathlib import Path
 from environs import Env
 import os
-
+import pymysql
 env = Env()
 env.read_env()
 
@@ -128,16 +128,20 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "USER": "joseph",
-        "PASSWORD": os.environ.get("PASSWORD"),
+        "ENGINE": "django.db.backends.mysql",
+        "USER": "root",
+        "PASSWORD": "",
         "NAME": "ecomdb",
-        "PORT": 5432,
+        "PORT": 3306,
         # "HOST": "db",
         # "ENGINE": "django.db.backends.sqlite3",
         # "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+# Fake PyMySQL's version and install as MySQLdb
+# https://adamj.eu/tech/2020/02/04/how-to-use-pymysql-with-django/
+pymysql.version_info = (1, 4, 2, "final", 0)
+pymysql.install_as_MySQLdb()
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

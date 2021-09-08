@@ -34,6 +34,8 @@ class ProductCategory(MPTTModel):
     class Meta:
         verbose_name = _("Product Category")
         verbose_name_plural = _("Product Categories")
+    def get_absolute_url(self):
+        return reverse("store:category_list", args=[self.slug])    
 
     def __str__(self) -> str:
         return self.name
@@ -134,7 +136,7 @@ class Product(models.Model):
         verbose_name_plural = _("Products")
 
     def get_absolute_url(self):
-        return reverse("Api:product_detail", args=[self.slug])
+        return reverse("store:product_detail", args=[self.slug])
 
     def __str__(self) -> str:
         return self.title
@@ -194,22 +196,83 @@ class ProductImage(models.Model):
         verbose_name_plural = _("Product Images")
 
 
-class OrderItem(models.Model) :
-    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True, blank=True)
-    ordered = models.BooleanField(default=False)
-    item = models.ForeignKey(Product, on_delete=models.CASCADE,blank=True, null=True)
-    quantity = models.IntegerField(default=1)
+# class OrderItem(models.Model) :
+#     user = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True, blank=True)
+#     ordered = models.BooleanField(default=False)
+#     item = models.ForeignKey(Product, on_delete=models.CASCADE,blank=True, null=True)
+#     quantity = models.IntegerField(default=1)
 
 
-    def __str__(self):
-        return f"{self.quantity} of {self.item.title}"
+#     def __str__(self):
+#         return f"{self.quantity} of {self.item.title}"
+
+# class Order(models.Model):
+#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,null=True, blank=True)
+#     items = models.ManyToManyField(OrderItem,blank=True, null=True)
+#     start_date = models.DateTimeField(auto_now_add=True)
+#     ordered_date = models.DateTimeField()
+#     ordered = models.BooleanField(default=False)
+
+#     def __str__(self):
+#         return self.user.email
+
 
 class Order(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,null=True, blank=True)
-    items = models.ManyToManyField(OrderItem,blank=True, null=True)
-    start_date = models.DateTimeField(auto_now_add=True)
-    ordered_date = models.DateTimeField()
-    ordered = models.BooleanField(default=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, blank=True, null=True)
+    date_ordered = models.DateTimeField(auto_now_add=True)
+    complete = models.BooleanField(default=False, null=True, blank=False)
+    transaction_id = models.CharField(max_length=200, null=True)
 
     def __str__(self):
-        return self.user.email
+        return str(self.id)
+    @property
+    def get_cart_total(self):
+        orderitems = self.orderitem_set.all()
+        total = sum([item.get_total for item in orderitems])
+        return total
+
+    @property
+    def get_cart_items(self):
+        orderitems = self.orderitem_set.all()
+        total = sum([item.quantity for item in orderitems])
+        return total
+
+    @property
+    def shipping(self):
+        shipping = False
+        orderitems = self.orderitem_set.all()
+        for i in orderitems:
+            if i.product.digital == False:
+                shipping = True
+        return shipping    
+
+
+class OrderItem(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, blank=True, null=True)
+    order = models.ForeignKey(Order, on_delete=models.SET_NULL, blank=True, null=True)
+    quantity = models.IntegerField(default=0, blank=True, null=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def get_total(self):
+        total = self.product.regular_price * self.quantity
+        return total
+    @property
+    def get_total_discount_item_price(self):
+        return self.product.discount_price  
+    @property
+    def get_amount_saved(self):
+        return self.get_total()-self.get_total_discount_item_price()    
+
+
+class ShippingAddress(models.Model):
+    customer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, blank=True, null=True)
+    order = models.ForeignKey(Order, on_delete=models.SET_NULL, blank=True, null=True)
+    address = models.CharField(max_length=200, null=True)
+    city = models.CharField(max_length=200, null=True)
+    state = models.CharField(max_length=200, null=True)
+    zipcode = models.CharField(max_length=200, null=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return (self.address)

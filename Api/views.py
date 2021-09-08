@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.urls.conf import include
 from rest_framework import generics
 from .models import Product, ProductCategory
 from . import models
@@ -42,12 +43,12 @@ class CategoryItemView(generics.ListAPIView):
     for filtering """
 
     def get_queryset(self):
-        return models.Product.objects.filter(product_category__slug=self.kwargs["slug"])
+        return models.Product.objects.filter(product_category__in=ProductCategory.objects.get(slug=self.kwargs["slug"]).get_descendants(include_self=True))
 
 
 # LISTAPIView allows a read only
 class CategoryListView(generics.ListAPIView):
-    queryset = ProductCategory.objects.all()
+    queryset = ProductCategory.objects.filter(level=1)
     serializer_class = CategorySerializer
 
 
