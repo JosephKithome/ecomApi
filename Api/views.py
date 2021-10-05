@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from django.urls.conf import include
 from rest_framework import generics
@@ -8,16 +9,15 @@ from django.http import JsonResponse,response
 from django.shortcuts import get_object_or_404
 from .models import Order,OrderItem
 
-from .serializers import ProductSerializer, CategorySerializer
-
-from rest_framework import viewsets
+from .serializers import OrderSerializer, ProductSerializer, CategorySerializer
 from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK,HTTP_400_BAD_REQUEST
-from django.utils import timezone
 from rest_framework import status
 from datetime import datetime
+
+
 # Create your views here.
 class ProductList(generics.ListAPIView):
     permission_classes = (IsAuthorOrReadOnly,)
@@ -48,15 +48,20 @@ class CategoryItemView(generics.ListAPIView):
 
 # LISTAPIView allows a read only
 class CategoryListView(generics.ListAPIView):
-    queryset = ProductCategory.objects.filter(level=1)
+    queryset = ProductCategory.objects.filter(level=2)
     serializer_class = CategorySerializer
 
 
 
 class AddtoOrderItemView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    def post(self, request, pk):
-        item = get_object_or_404(Product, pk=pk)
+    def post(self, request, *args,**kwargs):
+        slug = request.data.get('slug',None)
+
+        if slug is None:
+            return Response({'message':'invalid request'},status=HTTP_400_BAD_REQUEST)
+
+        item = get_object_or_404(Product, slug=slug)
         order_item, created = OrderItem.objects.get_or_create(
             item=item,
             user=self.request.user,
@@ -67,10 +72,10 @@ class AddtoOrderItemView(APIView):
         if order_qs.exists():
             order = order_qs[0]
 
-            if order.items.filter(item__pk=item.pk).exists():
+            if order.items.filter(item__slug=item.slug).exists():
                 order_item.quantity += 1
                 order_item.save()
-                return Response({"message": "Quantity is added",
+                return Response({"message": "item was added to cart",
                                  },
                                 status=status.HTTP_200_OK
                                 )
@@ -86,3 +91,17 @@ class AddtoOrderItemView(APIView):
             return Response({"message": "Order is created & Item added to your cart", },
                             status=status.HTTP_200_OK,
                             )
+
+
+class OrderDetailView(generics.RetrieveAPIView):
+    serializer_class = OrderSerializer
+    permission_classes=(permissions.IsAuthenticated)
+
+
+    def get_object(self):
+         try:
+             order =Order.objects.get(user=self.request.user,ordered=False)
+             return order
+
+         except ObjectDoesNotExist:
+             return Response({'message':'You do not have an active order'})    

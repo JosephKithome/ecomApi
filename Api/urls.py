@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CategoryListView, ProductList, ProductDetail, CategoryItemView,AddtoOrderItemView
+from .views import CategoryListView, ProductList, ProductDetail, CategoryItemView,AddtoOrderItemView,OrderDetailView
 from rest_framework.routers import SimpleRouter
 
 app_name = "store"
@@ -12,5 +12,6 @@ urlpatterns = [
     path("category", CategoryListView.as_view(), name="categories"),
     # Returns products in a particular category(filtered by slug which is category name)
     path("category/<slug:slug>/", CategoryItemView.as_view(), name="category_items"),
-    path('cart/',AddtoOrderItemView.as_view(),name='orderItems')
+    path('cart/',AddtoOrderItemView.as_view(),name='orderItems'),
+    path('order_detail',OrderDetailView.as_view())
 ]
